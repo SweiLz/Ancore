@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ancore</name>
+  <version>1.0.0</version>
+  <description>The ancore package</description>
+
+  <author email="sweilz.w@gmail.com">Liews Wuttipat</author>
+  <maintainer email="sweilz.w@gmail.com">Liews Wuttipat</maintainer>
+  <license>BSD</license>
+
+  <url type="repository">https://github.com/SweiLz/Ancore</url>
+  <url type="bugtracker">https://github.com/SweiLz/Ancore/issues</url>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>serial</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>serial</build_export_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>serial</exec_depend>
+
+
+</package>

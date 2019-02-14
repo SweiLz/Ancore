@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="ancore" type="ancore" name="ancore_node" output="screen">
+        <param name="port" value="/dev/ttyACM0"/>
+        <param name="baudrate" value="115200"/>
+        <param name="imu_frame_id" value="imu_link"/>
+        <param name="imu_topic" value="imu"/>
+        <param name="current_topic" value="current"/>
+    </node>
+</launch>
