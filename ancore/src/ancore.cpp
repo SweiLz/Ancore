@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
     {
         try
         {
-            ROS_INFO_STREAM("Connecting to port : " << port);
             ser.open();
         }
         catch (serial::IOException &e)
@@ -92,8 +91,6 @@ int main(int argc, char *argv[])
                             }
                         }
                     }
-                    ROS_INFO_STREAM("Hi I'm Liews." << count++);
-                    ros::Duration(0.5).sleep();
                     ros::spinOnce();
                 }
             }
