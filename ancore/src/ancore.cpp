@@ -2,6 +2,7 @@
 #include "serial/serial.h"
 
 #include "std_msgs/Float32.h"
+#include "std_msgs/Bool.h"
 #include "sensor_msgs/Imu.h"
 
 #define DEG_2_RAD 0.017453
@@ -10,6 +11,7 @@
 serial::Serial ser;
 std_msgs::Float32 current_msg;
 sensor_msgs::Imu imu_msg;
+std_msgs::Bool acc_msg;
 
 int16_t reverse_2bytes(char *bytes);
 int32_t reverse_4bytes(char *bytes);
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
 
     ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>(imu_topic, 1000);
     ros::Publisher current_pub = nh.advertise<std_msgs::Float32>(current_topic, 1000);
+    ros::Publisher acc_pub = nh.advertise<std_msgs::Bool>("acc", 1);
 
     ser.setPort(port);
     ser.setBaudrate(baudrate);
@@ -72,6 +75,9 @@ int main(int argc, char *argv[])
 
                                     current_msg.data = double(reverse_2bytes(&messageBuffer[0]) / 1000.0);
                                     current_pub.publish(current_msg);
+
+                                    acc_msg.data = (reverse_2bytes(&messageBuffer[2]) == 3) ? true : false;
+                                    acc_pub.publish(acc_msg);
 
                                     imu_msg.header.stamp = ros::Time::now();
                                     imu_msg.linear_acceleration.x = (double)reverse_4bytes(&messageBuffer[4]) / (1 << 16) * G_2_MPSS;
