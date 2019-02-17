@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ancore)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,6 +10,7 @@ project(ancore)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   serial
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -117,6 +118,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 ## Declare a C++ library
@@ -197,10 +199,30 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(ancore
-  src/ancore.cpp
+add_executable(ancore_node
+  include/ancore/ancore_node.h
+  src/ancore_node.cpp
 )
-add_dependencies(ancore ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(ancore
+add_dependencies(ancore_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ancore_node
   ${catkin_LIBRARIES}
+  # Ancore
 )
+
+# add_executable(ancore_test
+#   src/ancore_test.cpp
+# )
+# add_dependencies(ancore_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(ancore_test
+#   ${catkin_LIBRARIES}
+#   Ancore
+# )
+
+# add_library(Ancore
+#   include/ancore/Ancore.h
+#   src/Ancore.cpp
+# )
+# add_dependencies(Ancore ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(Ancore
+#   ${catkin_LIBRARIES}
+# )
