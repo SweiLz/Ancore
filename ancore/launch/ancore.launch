@@ -1,19 +1,40 @@
 <?xml version="1.0"?>
 <launch>
+
+    <arg name="port" default="/dev/ttyACM0"/>
+    <arg name="baudrate" default="115200"/>
+    <arg name="wheel_separation" default="0.65"/>
+    <arg name="wheel_radius" default="0.08"/>
+    <arg name="linear_min" default="-0.5"/>
+    <arg name="linear_max" default="0.5"/>
+    <arg name="angular_min" default="-0.5"/>
+    <arg name="angular_max" default="0.5"/>
+    <arg name="publish_odom_frame" default="true"/>
+    <arg name="imu_frame_id" default="imu_link"/>
+    <arg name="imu_topic" default="imu"/>
+    <arg name="odom_frame_id" default="odom"/>
+    <arg name="odom_topic" default="odom"/>
+    <arg name="base_frame_id" default="base_footprint"/>
+    <arg name="cmd_topic" default="cmd_vel"/>
+
     <node pkg="ancore" type="ancore_node" name="ancore_node" output="screen">
-        <param name="port" value="/dev/ttyACM0"/>
-        <param name="baudrate" value="115200"/>
+        <param name="port" value="$(arg port)"/>
+        <param name="baudrate" value="$(arg baudrate)"/>
 
-        <param name="wheel_separation" value="0.65"/>
-        <param name="wheel_radius" value="0.08"/>
+        <param name="wheel_separation" value="$(arg wheel_separation)"/>
+        <param name="wheel_radius" value="$(arg wheel_radius)"/>
+        <param name="linear_min" value="$(arg linear_min)"/>
+        <param name="linear_max" value="$(arg linear_max)"/>
+        <param name="angular_min" value="$(arg angular_min)"/>
+        <param name="angular_max" value="$(arg angular_max)"/>
 
-        <param name="publish_odom_frame" value="true"/>
+        <param name="publish_odom_frame" value="$(arg publish_odom_frame)"/>
 
-        <param name="imu_frame_id" value="imu_link"/>
-        <param name="imu_topic" value="imu"/>
-        <param name="odom_frame_id" value="odom"/>
-        <param name="odom_topic" value="odom"/>
-        <param name="base_frame_id" value="base_footprint"/>
-        <param name="cmd_topic" value="cmd_vel"/>
+        <param name="imu_frame_id" value="$(arg imu_frame_id)"/>
+        <param name="imu_topic" value="$(arg imu_topic)"/>
+        <param name="odom_frame_id" value="$(arg odom_frame_id)"/>
+        <param name="odom_topic" value="$(arg odom_topic)"/>
+        <param name="base_frame_id" value="$(arg base_frame_id)"/>
+        <param name="cmd_topic" value="$(arg cmd_topic)"/>
     </node>
 </launch>

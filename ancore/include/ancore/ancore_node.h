@@ -2,6 +2,8 @@
 #include <sstream>
 #include "serial/serial.h"
 
+#define constrain(value, low, high) ((value) < (low) ? (low) : ((value) > (high) ? (high) : (value)))
+
 #define DEG_2_RAD 0.017453
 #define G_2_MPSS 9.80665
 
@@ -38,5 +40,9 @@ std::string messageBuffer;
 
 float wheel_separation;
 float wheel_radius;
+float wheel_deadrad;
 int8_t Accuracy;
 int8_t Calibrate = 0;
+
+float linear_min, linear_max;
+float angular_min, angular_max;

@@ -29,6 +29,8 @@ ros::Publisher diagnostic_pub;
 
 ros::Time last_time;
 
+float wR = 0.0, wL = 0.0;
+
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "ancore_node");
@@ -46,6 +48,12 @@ int main(int argc, char *argv[])
     nh_.param<int>("baudrate", baudrate, 115200);
     nh_.param<float>("wheel_separation", wheel_separation, 0.5);
     nh_.param<float>("wheel_radius", wheel_radius, 0.075);
+    nh_.param<float>("wheel_deadrad", wheel_deadrad, 0.7);
+
+    nh_.param<float>("linear_min", linear_min, -0.5);
+    nh_.param<float>("linear_max", linear_max, 0.5);
+    nh_.param<float>("angular_min", angular_min, -0.5);
+    nh_.param<float>("angular_max", angular_max, 0.5);
     nh_.param<bool>("publish_odom_frame", pubOdomFrame, false);
 
     nh_.param<std::string>("imu_frame_id", imu_msg.header.frame_id, "imu_link");
@@ -101,11 +109,11 @@ int main(int argc, char *argv[])
                                     memcpy(&protocal, &messageBuffer[0], 44);
                                     ros::Time current_time = ros::Time::now();
 
-                                    // float vR = float(protocal.SpeedR) / 10 * wheel_radius;
-                                    // float vL = float(protocal.SpeedL) / 10 * wheel_radius;
+                                    float vR = float(protocal.SpeedR) / 10 * wheel_radius;
+                                    float vL = float(protocal.SpeedL) / 10 * wheel_radius;
 
-                                    float vR = -1.0 * wheel_radius;
-                                    float vL = 1.0 * wheel_radius;
+                                    // float vR = wR; //-1.0 * wheel_radius;
+                                    // float vL = wL; //1.0 * wheel_radius;
 
                                     float trans_x = (-vR + vL) / 2.0;
                                     float rotat_z = (-vR - vL) / wheel_separation;
@@ -139,6 +147,7 @@ int main(int argc, char *argv[])
                                     pose.x += (trans_x * cos(pose.theta)) * dt;
                                     pose.y += (trans_x * sin(pose.theta)) * dt;
                                     pose.theta = tf::getYaw(q);
+                                    // pose.theta += (rotat_z * dt);
 
                                     odom_quat = tf::createQuaternionMsgFromYaw(pose.theta);
 
@@ -223,11 +232,27 @@ void debugCB(const ros::TimerEvent &)
 
 void cmdvelCB(const geometry_msgs::Twist &msg)
 {
-    float goal_trans_x = msg.linear.x;
-    float goal_rotat_z = msg.angular.z;
+    float goal_trans_x = constrain(msg.linear.x, linear_min, linear_max);
+    float goal_rotat_z = constrain(msg.angular.z, angular_min, angular_max);
 
-    float wL = (goal_trans_x - wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
-    float wR = -(goal_trans_x + wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
+    wL = (goal_trans_x - wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
+    wR = -(goal_trans_x + wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
+    // if (wL < wheel_deadrad && wL > 0)
+    // {
+    //     wL = wheel_deadrad;
+    // }
+    // else if (wL > -wheel_deadrad && wL < 0)
+    // {
+    //     wL = -wheel_deadrad;
+    // }
+    // if (wR < wheel_deadrad && wR > 0)
+    // {
+    //     wR = wheel_deadrad;
+    // }
+    // else if (wR > -wheel_deadrad && wR < 0)
+    // {
+    //     wR = -wheel_deadrad;
+    // }
 
     uint8_t data[4];
     data[0] = 0xFF;
