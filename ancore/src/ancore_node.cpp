@@ -107,6 +107,7 @@ int main(int argc, char *argv[])
                                 {
                                     messageBuffer = ser.read(44);
                                     memcpy(&protocal, &messageBuffer[0], 44);
+
                                     ros::Time current_time = ros::Time::now();
 
                                     float vR = float(protocal.SpeedR) / 10 * wheel_radius;
@@ -117,6 +118,7 @@ int main(int argc, char *argv[])
 
                                     float trans_x = (-vR + vL) / 2.0;
                                     float rotat_z = (-vR - vL) / wheel_separation;
+
                                     Accuracy = protocal.Accuracy;
                                     if (Accuracy > 0)
                                     {
@@ -237,6 +239,7 @@ void cmdvelCB(const geometry_msgs::Twist &msg)
 
     wL = (goal_trans_x - wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
     wR = -(goal_trans_x + wheel_separation / 2.0 * goal_rotat_z) / wheel_radius;
+    // ROS_INFO_STREAM("Debug : " << wR << ", " << wL);
     // if (wL < wheel_deadrad && wL > 0)
     // {
     //     wL = wheel_deadrad;
