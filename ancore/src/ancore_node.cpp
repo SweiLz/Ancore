@@ -11,7 +11,12 @@
 #include "geometry_msgs/TransformStamped.h"
 #include "nav_msgs/Odometry.h"
 #include "sensor_msgs/Imu.h"
+#include "std_msgs/Float64.h"
 
+#include "std_srvs/Empty.h"
+
+bool updateAlt(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+void getAltCB(const ros::TimerEvent &);
 void debugCB(const ros::TimerEvent &);
 void cmdvelCB(const geometry_msgs::Twist &msg);
 
@@ -21,13 +26,16 @@ nav_msgs::Odometry odom_msg;
 geometry_msgs::Pose2D pose;
 geometry_msgs::TransformStamped odom_trans;
 geometry_msgs::Quaternion odom_quat;
+std_msgs::Float64 altitude;
 
 ros::Publisher imu_pub;
 ros::Publisher odom_pub;
 ros::Subscriber cmdvel_sub;
 ros::Publisher diagnostic_pub;
+ros::Publisher alt_pub;
 
 ros::Time last_time;
+ros::Timer getAlt;
 
 float wR = 0.0, wL = 0.0;
 
@@ -42,6 +50,7 @@ int main(int argc, char *argv[])
     std::string imu_topic;
     std::string odom_topic;
     std::string cmd_topic;
+    std::string alt_topic;
     bool pubOdomFrame;
 
     nh_.param<std::string>("port", port, "/dev/ttySTM32");
@@ -58,6 +67,7 @@ int main(int argc, char *argv[])
 
     nh_.param<std::string>("imu_frame_id", imu_msg.header.frame_id, "imu_link");
     nh_.param<std::string>("imu_topic", imu_topic, "imu");
+    nh_.param<std::string>("altitude_topic", alt_topic, "altitude");
     nh_.param<std::string>("odom_frame_id", odom_msg.header.frame_id, "odom");
     odom_trans.header.frame_id = odom_msg.header.frame_id;
     nh_.param<std::string>("odom_topic", odom_topic, "odom");
@@ -72,9 +82,12 @@ int main(int argc, char *argv[])
     static tf::TransformBroadcaster odom_broadcaster;
     imu_pub = nh.advertise<sensor_msgs::Imu>(imu_topic, 10);
     odom_pub = nh.advertise<nav_msgs::Odometry>(odom_topic, 10);
+    alt_pub = nh.advertise<std_msgs::Float64>(alt_topic, 1);
     cmdvel_sub = nh.subscribe("cmd_vel", 10, &cmdvelCB);
     diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1);
 
+    ros::ServiceServer update_altitude = nh.advertiseService("update_altitude", updateAlt);
+    getAlt = nh.createTimer(ros::Duration(5.0), getAltCB);
     ros::Timer debug = nh.createTimer(ros::Duration(1.0), debugCB);
 
     last_time = ros::Time::now();
@@ -103,10 +116,11 @@ int main(int argc, char *argv[])
                         {
                             if (uint16_t(*ser.read(2).c_str()) == 0xFFFF)
                             {
+
                                 if (uint8_t(*ser.read(1).c_str()) == 0xFE)
                                 {
-                                    messageBuffer = ser.read(44);
-                                    memcpy(&protocal, &messageBuffer[0], 44);
+                                    messageBuffer = ser.read(48);
+                                    memcpy(&protocal, &messageBuffer[0], 48);
 
                                     ros::Time current_time = ros::Time::now();
 
@@ -139,6 +153,7 @@ int main(int argc, char *argv[])
                                     imu_msg.orientation.y = float(protocal.Quat.Y) / (1 << 30);
                                     imu_msg.orientation.z = float(protocal.Quat.Z) / (1 << 30);
                                     imu_pub.publish(imu_msg);
+                                    altitude.data = float(protocal.Altitude) / 1000;
 
                                     tf::Quaternion q(
                                         imu_msg.orientation.x,
@@ -176,6 +191,14 @@ int main(int argc, char *argv[])
 
                                     last_time = current_time;
                                 }
+                                // else
+                                // {
+                                //     ROS_WARN("Hi");
+                                //     messageBuffer = ser.read(8);
+                                //     memcpy(&Altitude, &messageBuffer[0], 4);
+                                //     altitude.data = float(Altitude) / 1000;
+                                //     alt_pub.publish(altitude);
+                                // }
                             }
                         }
                     }
@@ -202,6 +225,30 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+bool updateAlt(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+    getAlt.start();
+    uint8_t data[8];
+    data[0] = 0xFF;
+    data[1] = 0xFF;
+    data[2] = 0xFF;
+    data[3] = 0xEF;
+    data[4] = 0xFF;
+    data[5] = 0xFF;
+    data[6] = 0xFF;
+    data[7] = 0xEE;
+    ser.write(&data[0], 8);
+
+    return true;
+}
+
+void getAltCB(const ros::TimerEvent &)
+{
+    ROS_INFO("Publish altitude");
+    alt_pub.publish(altitude);
+    getAlt.stop();
 }
 
 void debugCB(const ros::TimerEvent &)
@@ -257,10 +304,16 @@ void cmdvelCB(const geometry_msgs::Twist &msg)
     //     wR = -wheel_deadrad;
     // }
 
-    uint8_t data[4];
+    uint8_t data[10];
     data[0] = 0xFF;
-    data[1] = int(wR * 10) & 0xFF;
-    data[2] = int(wL * 10) & 0xFF;
+    data[1] = 0xFF;
+    data[2] = 0xFF;
     data[3] = 0xFE;
-    ser.write(&data[0], 4);
+    data[4] = int(wR * 10) & 0xFF;
+    data[5] = int(wL * 10) & 0xFF;
+    data[6] = 0xFF;
+    data[7] = 0xFF;
+    data[8] = 0xFF;
+    data[9] = 0xEE;
+    ser.write(&data[0], 10);
 }

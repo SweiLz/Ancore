@@ -32,6 +32,7 @@ struct Protocal
     Axis<int32_t> Accel;
     Axis<int32_t> Gyro;
     Quaternion<int32_t> Quat;
+    int32_t Altitude;
 };
 
 serial::Serial ser;
@@ -41,6 +42,7 @@ std::string messageBuffer;
 float wheel_separation;
 float wheel_radius;
 float wheel_deadrad;
+
 int8_t Accuracy;
 int8_t Calibrate = 0;
 
