@@ -1,9 +1,9 @@
 #include "ros/ros.h"
 #include "ancore_node.h"
 
-#include "diagnostic_msgs/DiagnosticArray.h"
-#include "diagnostic_msgs/DiagnosticStatus.h"
-#include "diagnostic_msgs/KeyValue.h"
+// #include "diagnostic_msgs/DiagnosticArray.h"
+// #include "diagnostic_msgs/DiagnosticStatus.h"
+// #include "diagnostic_msgs/KeyValue.h"
 #include "tf/tf.h"
 #include "tf/transform_broadcaster.h"
 #include "geometry_msgs/Twist.h"
@@ -31,7 +31,7 @@ std_msgs::Float64 altitude;
 ros::Publisher imu_pub;
 ros::Publisher odom_pub;
 ros::Subscriber cmdvel_sub;
-ros::Publisher diagnostic_pub;
+// ros::Publisher diagnostic_pub;
 ros::Publisher alt_pub;
 
 ros::Time last_time;
@@ -84,10 +84,10 @@ int main(int argc, char *argv[])
     odom_pub = nh.advertise<nav_msgs::Odometry>(odom_topic, 10);
     alt_pub = nh.advertise<std_msgs::Float64>(alt_topic, 1);
     cmdvel_sub = nh.subscribe("cmd_vel", 10, &cmdvelCB);
-    diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1);
+    // diagnostic_pub = nh.advertise<diagnostic_msgs::DiagnosticArray>("/diagnostics", 1);
 
     ros::ServiceServer update_altitude = nh.advertiseService("update_altitude", updateAlt);
-    getAlt = nh.createTimer(ros::Duration(5.0), getAltCB);
+    getAlt = nh.createTimer(ros::Duration(0.5), getAltCB);
     ros::Timer debug = nh.createTimer(ros::Duration(1.0), debugCB);
 
     last_time = ros::Time::now();
@@ -253,30 +253,30 @@ void getAltCB(const ros::TimerEvent &)
 
 void debugCB(const ros::TimerEvent &)
 {
-    diagnostic_msgs::DiagnosticArray dia_array;
-    diagnostic_msgs::DiagnosticStatus ancore_status;
-    ancore_status.name = "Ancore";
-    ancore_status.level = diagnostic_msgs::DiagnosticStatus::OK;
-    ancore_status.message = "Everything seem to be ok.";
-    diagnostic_msgs::KeyValue accuracy;
-    accuracy.key = "IMU accuracy";
-    accuracy.value = std::to_string(Accuracy);
-    diagnostic_msgs::KeyValue calibrate;
-    calibrate.key = "IMU Calibrate";
-    if (Calibrate == 1)
-    {
-        calibrate.value = "true";
-    }
-    else
-    {
-        calibrate.value = "false";
-    }
+    // diagnostic_msgs::DiagnosticArray dia_array;
+    // diagnostic_msgs::DiagnosticStatus ancore_status;
+    // ancore_status.name = "Ancore";
+    // ancore_status.level = diagnostic_msgs::DiagnosticStatus::OK;
+    // ancore_status.message = "Everything seem to be ok.";
+    // diagnostic_msgs::KeyValue accuracy;
+    // accuracy.key = "IMU accuracy";
+    // accuracy.value = std::to_string(Accuracy);
+    // diagnostic_msgs::KeyValue calibrate;
+    // calibrate.key = "IMU Calibrate";
+    // if (Calibrate == 1)
+    // {
+    //     calibrate.value = "true";
+    // }
+    // else
+    // {
+    //     calibrate.value = "false";
+    // }
 
-    ancore_status.values.push_back(accuracy);
-    ancore_status.values.push_back(calibrate);
+    // ancore_status.values.push_back(accuracy);
+    // ancore_status.values.push_back(calibrate);
 
-    dia_array.status.push_back(ancore_status);
-    diagnostic_pub.publish(dia_array);
+    // dia_array.status.push_back(ancore_status);
+    // diagnostic_pub.publish(dia_array);
 }
 
 void cmdvelCB(const geometry_msgs::Twist &msg)
